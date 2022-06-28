@@ -109,6 +109,7 @@ export default function Mint(props) {
 				if(refaddr==props.address){
 					alert("Can not refer yourself");
 					window.location.assign("/");
+					break gomint;
 				}
 			}
 			else {

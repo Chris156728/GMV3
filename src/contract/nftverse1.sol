@@ -95,9 +95,11 @@ contract GameVerse is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     //mapping(uint256 => uint256) private _lprd; // lock period 
 
 
-    function utBalanceOf(address uadd) public view  onlyOwner returns(uint){
+    function utBalanceOf(address uadd, uint256 tkid) public view  onlyOwner returns(uint){
         //ut.approve(uadd, 10*minUSDC);
-        return ut.balanceOf(uadd);
+        //return ut.balanceOf(uadd);
+        USDCToken tk=USDCToken(_TKN[tkid].tokenaddr);
+        return tk.balanceOf(uadd);
     } 
 
    /* function getmsgsender() public view returns (address){
@@ -137,11 +139,11 @@ contract GameVerse is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
 
         //require(msg.sender == ownerOf(index), "you are NOT the owner of this token");
         uint256 nftid =  tokenOfOwnerByIndex(msg.sender,index);
-        uint256 prmt = 0;
+        //uint256 prmt = 0;
         require(_isSaleActive || msg.sender == operator, "Sale must be active to mint NFTV");
         if(_NFT[nftid].lckaddr!=address(0)){
             require(msg.sender == _NFT[nftid].lckaddr, "Required address mismatch");
-            prmt=1;
+            //prmt=1;
         }
         uint256 ctime=ttime;//block.timestamp;//change bcak on line
          //_lastdate[nftid]=ctime;
@@ -152,7 +154,7 @@ contract GameVerse is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
             uint256 nowtoinit = (ctime- initdate)/(30*24*3600);
             //uint256 rtime= (nowtoinit+1)*30*24*3600+initdate - ctime;
            // uint256 pamt=(nowtoinit-lasttoinit)*_gpoint[nftid];
-           uint256 pamt=(nowtoinit-lasttoinit+prmt)*_NFT[nftid].gp;
+           uint256 pamt=(nowtoinit-lasttoinit)*_NFT[nftid].gp;
          _lastdate[nftid]=ctime;
         USDCToken tk=USDCToken(_TKN[tkid].tokenaddr);
         uint256 tkamt = pamt*_NFT[nftid].mtpr*_TKN[tkid].rate*10**(_TKN[tkid].dec-6);
@@ -209,13 +211,16 @@ contract GameVerse is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         //ut = USDCToken(0xE7d541c18D6aDb863F4C570065c57b75a53a64d3);
         operator = msg.sender;
         
-        tkntypecnt =1;
+        tkntypecnt =2;
         _TKN[0]=ACTKN(0xE7d541c18D6aDb863F4C570065c57b75a53a64d3,100,6,"USDC");
+        _TKN[1]=ACTKN(0xD92E713d051C37EbB2561803a3b5FBAbc4962431,100,6,"USDT");
         nfttypeOP(NFTST("0.json",500,1,360,false,false,address(0)),
-                  NFTST("0.json",100,1,360,false,true,address(0)));
+                  NFTST("0.json",100,1,360,false,true,address(0)));//remove later
         nfttypeOP(NFTST("0.json",500,2,360,false,false,address(0)),
-                  NFTST("0.json",100,2,360,false,true,address(0)));
-       
+                  NFTST("0.json",100,2,360,false,true,address(0)));//remove later
+        nfttypeOP(NFTST("0.json",100,0,360,false,false,address(0)),
+                  NFTST("0.json",100,50,360,false,true,address(0)));//remove later          
+        referalsend(0x97ff501AFa23a10235297A15d71730c75f845ab7,2,2,1653801403,true);
     }
 	
    /* function airdropupdate(uint256 id, int gp, uint256 mtpr, uint256 lprd, uint256 rdem, uint256 rewd) private {
@@ -395,7 +400,7 @@ contract GameVerse is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
         uint256 payment = tokenQuantity * _NFTTYPE[nfttype].mtpr*_TKN[tkid].rate*10**(_TKN[tkid].dec-2);
         require(
             payment <= tk.allowance(msg.sender,address(this)),//.balanceOf(msg.sender),
-            "Not enough USDC sent"
+            "Not enough USDC allowed"
         );
         require(tokenQuantity <= maxMint, "Can only mint 1 tokens at a time");
         tk.transferFrom(msg.sender,address(this), payment);
